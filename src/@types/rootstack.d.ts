@@ -1,4 +1,6 @@
+// types.ts
 export type RootStackParamList = {
-    Initial: undefined;          // Se não há parâmetros
-    Dashboard: undefined;
-};
+    index: undefined; // Defina o tipo para cada tela
+    explore: undefined; // Aqui, "explore" é a tela de destino
+  };
+  

@@ -1,85 +1,68 @@
-import React ,{ useState, useRef, useEffect  } from 'react';
-import { Text, View, TextInput, ScrollView, Pressable, Alert, TouchableOpacity } from 'react-native';
-import { styles, tutor } from '../../styles/styles';
-import LottieView from 'lottie-react-native';
-import AntDesign from '@expo/vector-icons/AntDesign';
-import { useNavigation, NavigationProp  } from '@react-navigation/native';
-import { RootStackParamList } from '../../@types/rootstack';
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity } from "react-native";
+import { navigator } from '@/src/styles/styles';
 
+type StatusKeys = 'moedor' | 'tesoura' | 'bandejaUp' | 'bandeja' | 'esteira' | 'atuador1' | 'atuador2';
 
 export default function Dashboard() {
+  
+  const [status, setStatus] = useState({
+    moedor: false,
+    tesoura: false,
+    bandejaUp: false,
+    bandeja: false,
+    esteira: false,
+    atuador1: false,
+    atuador2: false,
+  });
 
+  const [biscoitos, setBiscoitos] = useState({ A: 0, B: 0, C: 0, D: 0 });
+  const [atual, setAtual] = useState("A");
 
-const scrollViewRef = useRef<ScrollView | null>(null);
+  const toggleStatus = (key: StatusKeys) => {
+    setStatus((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
 
-const getPaddingBottom = (isOpen: boolean) => (isOpen ? 350 : 200);
-const [isTyping, setIsTyping] = useState(false);
-const [userQuestion, setUserQuestion] = useState('');
-const [userQuestionDispaly, setuserQuestionDispaly] = useState('');
-const [tutorResponses, setTutorResponses] = useState<string[]>([]); 
-const [isInputVisible, setIsInputVisible] = useState(false);
-const [chatHistory, setChatHistory] = useState<{ type: 'user' | 'tutor'; text: string }[]>([]);
-
-const handleAskQuestion = () => {
-    if (userQuestion.trim()) {
-        // Adiciona a pergunta do usuário ao histórico de chat
-        setChatHistory(prevHistory => [
-            ...prevHistory,
-            { type: 'user', text: userQuestion }
-        ]);
-        setIsTyping(true);
-
-        // Simula o tempo de resposta do tutor
-        setTimeout(() => {
-            setChatHistory(prevHistory => [
-                ...prevHistory,
-                { type: 'tutor', text: `Resposta do tutor para: ${userQuestion}` }
-            ]);
-            setUserQuestion(''); // Limpa o campo de entrada
-            setIsTyping(false);
-        }, 2000);
-    }
-};
-
+  
   return (
-    <View style={styles.container}>
-        {/* Caixa de diálogo do tutor */}
-        <View style={tutor.chatfield}>
-            <ScrollView style={tutor.studyRoutine}>
-                {chatHistory.map((message, index) => (
-                        <View key={index} style={{ alignSelf: message.type === 'user' ? 'flex-end' : 'flex-start', marginBottom: 8, marginLeft:3, }}>
-                            {/* {message.type === 'tutor' && (
-                                <AntDesign name="user" size={32} color='#FFF' style={tutor.icon} />
-                            )} */}
-                            <TextInput  style={message.type === 'user' ? tutor.userText : tutor.tutorText} multiline={true} editable={false}>
-                                {message.text}
-                            </TextInput >
-                        </View>
-                    ))}
-                    {isTyping && (
-                        <LottieView
-                            source={require('../../assets/loading.json')} // Substitua pelo caminho correto do arquivo JSON
-                            autoPlay
-                            loop
-                            style={tutor.lottie}
-                        />
-                    )}
-            </ScrollView>
-        </View>
-        {/* Campo de entrada e botão */}
-        <View style={tutor.inputChat}>
-            <TextInput
-            style={[tutor.input, tutor.alignLeft]}
-            placeholder="Faça uma pergunta..."
-            value = {userQuestion}
-            placeholderTextColor='#A9A9A9'
-            onChangeText={setUserQuestion}
-            editable={!isTyping} // Impede a digitação enquanto o tutor está digitando
-            />
-            <Pressable style={[tutor.okButton, tutor.alignRight]} onPress={handleAskQuestion}>
-            <Text style={tutor.buttonText}>OK</Text>
-            </Pressable>
-        </View>
-        </View>
-    );
-};
+    <View style={navigator.container}>
+      <View style={navigator.card}>
+        <Text style={navigator.title}>Controle de Motores</Text>
+        {Object.keys(status).map((key) => (
+          <View key={key} style={navigator.row}>
+            <Text style={navigator.label}>Motor {key.replace(/([A-Z])/g, ' $1')}</Text>
+            <TouchableOpacity 
+              style={[navigator.button, status[key] ? navigator.buttonOff : navigator.buttonOn]} 
+              onPress={() => toggleStatus(key)}>
+              <Text style={navigator.buttonText}>{status[key] ? "Desligado" : "Ligado"}</Text>
+            </TouchableOpacity>
+          </View>
+        ))}
+      </View>
+
+      <View style={navigator.card}>
+        <Text style={navigator.title}>Produção</Text>
+        <Text style={navigator.subtitle}>Biscoito em produção: <Text style={navigator.bold}>{atual}</Text></Text>
+        {Object.entries(biscoitos).map(([tipo, qtd]) => (
+          <View key={tipo} style={navigator.row}>
+            <Text>Biscoito {tipo}</Text>
+            <Text>{qtd}</Text>
+          </View>
+        ))}
+      </View>
+
+      <View style={navigator.controls}>
+        <TouchableOpacity style={navigator.controlButton} onPress={() => console.log("Start pressed")}>
+          <Text style={navigator.controlText}>Start</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[navigator.controlButton, navigator.stopButton]} onPress={() => console.log("Stop pressed")}>
+          <Text style={navigator.controlText}>Stop</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[navigator.controlButton, navigator.emergencyButton]} onPress={() => console.log("Emergency pressed")}>
+          <Text style={navigator.controlText}>Emergência</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}; 
+
